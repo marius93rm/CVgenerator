@@ -6,13 +6,17 @@ Stato attuale:
 - fondamenta del progetto pronte;
 - CLI avviabile;
 - `cvgen init` crea le cartelle base;
-- parsing, job analysis e rendering finale non sono ancora implementati.
+- `cvgen profile ingest/show/export` costruisce il career vault locale;
+- il vault mantiene le fonti nella lingua originale ma salva `preferredOutputLanguage = "en"` per il CV finale;
+- job analysis e rendering finale non sono ancora implementati.
 
 ## Quick start
 
 ```bash
 npm run cvgen -- --help
 npm run cvgen -- init
+npm run cvgen -- profile ingest --cv ./inputs/marius-cv.pdf --linkedin-pdf ./inputs/linkedin.pdf --notes ./inputs/profile.md
+npm run cvgen -- profile show
 npm test
 ```
 

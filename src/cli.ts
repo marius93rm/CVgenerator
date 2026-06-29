@@ -5,11 +5,17 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import packageJson from '../package.json' with { type: 'json' };
 import { loadConfig } from './config.js';
+import { exportProfile, ingestProfile, loadNormalizedProfile, summarizeProfile } from './profile/index.js';
 import { ensureWorkspaceStructure } from './storage/index.js';
 
 function failNotImplemented(commandName: string) {
   console.error(chalk.yellow(`${commandName} is not implemented yet.`));
   process.exitCode = 1;
+}
+
+function collectValue(value: string, previous: string[]) {
+  previous.push(value);
+  return previous;
 }
 
 export function createProgram() {
@@ -33,15 +39,67 @@ export function createProgram() {
   const profile = program.command('profile').description('Manage the local normalized user profile.');
   profile
     .command('ingest')
-    .description('Ingest profile inputs from PDF, export files, or manual text.')
-    .option('-f, --file <path>', 'Input file path')
-    .option('-t, --text <text>', 'Manual input text')
-    .action(() => failNotImplemented('cvgen profile ingest'));
+    .description('Ingest CV, LinkedIn export files, notes, and extra profile sources.')
+    .option('--cv <path>', 'Path to a local CV PDF', collectValue, [])
+    .option('--linkedin-pdf <path>', 'Path to a LinkedIn profile PDF saved by the user', collectValue, [])
+    .option('--linkedin-export <path>', 'Path to a manually downloaded LinkedIn export ZIP', collectValue, [])
+    .option('--notes <path>', 'Path to Markdown notes about the profile', collectValue, [])
+    .option('--extra <path>', 'Path to any extra TXT/MD/PDF evidence file', collectValue, [])
+    .option('--no-llm', 'Disable LLM normalization and run deterministic extraction only')
+    .option('--force', 'Ignore content cache and reprocess every file')
+    .action(async (options) => {
+      const config = loadConfig();
+      const result = await ingestProfile({
+        config,
+        cvPaths: options.cv,
+        linkedinPdfPaths: options.linkedinPdf,
+        linkedinExportPaths: options.linkedinExport,
+        notesPaths: options.notes,
+        extraPaths: options.extra,
+        noLlm: !options.llm,
+        force: options.force ?? false,
+      });
+
+      const llmMessage = result.llmEnabled
+        ? 'LLM normalization enabled.'
+        : 'LLM normalization disabled; raw extraction only plus deterministic normalization.';
+
+      console.log(chalk.green(`Profile ingested from ${result.inputCount} input file(s).`));
+      console.log(`Stored ${result.sourceCount} source evidence chunk(s).`);
+      console.log(llmMessage);
+      console.log(`Normalized profile: ${result.profilePaths.normalizedPath}`);
+    });
   profile
     .command('show')
     .description('Show the normalized user profile.')
     .option('--json', 'Print raw JSON')
-    .action(() => failNotImplemented('cvgen profile show'));
+    .action(async (options) => {
+      const config = loadConfig();
+      const profileData = await loadNormalizedProfile(config);
+
+      if (options.json) {
+        console.log(JSON.stringify(profileData, null, 2));
+        return;
+      }
+
+      console.log(JSON.stringify(summarizeProfile(profileData), null, 2));
+    });
+  profile
+    .command('export')
+    .description('Export the saved profile as JSON.')
+    .option('-o, --output <path>', 'Write JSON to a file instead of stdout')
+    .option('--raw', 'Export profile.raw.json instead of profile.normalized.json')
+    .action(async (options) => {
+      const config = loadConfig();
+      const exported = await exportProfile(config, options.output, options.raw ? 'raw' : 'normalized');
+
+      if (!options.output) {
+        console.log(JSON.stringify(exported, null, 2));
+        return;
+      }
+
+      console.log(chalk.green(`Profile exported to ${path.resolve(config.rootDir, options.output)}`));
+    });
 
   const job = program.command('job').description('Import and analyze job postings.');
   job
