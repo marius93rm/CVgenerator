@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.npm-cache/
+.env
+.DS_Store
+coverage/
+playwright-report/
+test-results/
+data/*
+!data/.gitkeep
+inputs/*
+!inputs/.gitkeep
+outputs/*
+!outputs/.gitkeep

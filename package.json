@@ -1,0 +1,60 @@
+{
+  "name": "cvgenerator",
+  "version": "1.0.0",
+  "description": "CLI TypeScript/Node per generare CV PDF personalizzati da annunci di lavoro.",
+  "type": "module",
+  "main": "dist/cli.js",
+  "bin": {
+    "cvgen": "dist/cli.js"
+  },
+  "scripts": {
+    "dev": "tsx watch src/cli.ts",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint src test --ext .ts,.js --max-warnings=0",
+    "cvgen": "tsx src/cli.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marius93rm/CVgenerator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marius93rm/CVgenerator/issues"
+  },
+  "homepage": "https://github.com/marius93rm/CVgenerator#readme",
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "chalk": "^5.6.2",
+    "cheerio": "^1.2.0",
+    "commander": "^15.0.0",
+    "dotenv": "^17.4.2",
+    "fs-extra": "^11.3.5",
+    "handlebars": "^4.7.9",
+    "jsdom": "^29.1.1",
+    "openai": "^6.45.0",
+    "ora": "^9.4.1",
+    "pdf-parse": "^2.4.5",
+    "pino": "^10.3.1",
+    "playwright": "^1.61.1",
+    "turndown": "^7.2.4",
+    "undici": "^8.5.0",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/fs-extra": "^11.0.4",
+    "@types/jsdom": "^28.0.3",
+    "@types/node": "^26.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.62.0",
+    "@typescript-eslint/parser": "^8.62.0",
+    "eslint": "^10.6.0",
+    "prettier": "^3.9.3",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}
